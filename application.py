@@ -6,20 +6,19 @@ from config import *
 
 app = Flask(__name__)
 
-client = boto3.client('secretsmanager')
+#get the username from Secret Manger
+client = boto3.client('secretsmanager', region_name='us-east-1')
 
-response = client.get_secret_value(
-  SecretId='Testst1'
-   )
+response = client.get_secret_value(SecretId='EMPDB')
 database_secrets = json.loads(response['SecretString'])
 username = database_secrets['username']
     
-response = client.get_secret_value(
-    SecretId='Testst1'
-    )
+ #get the password from Secret Manger   
+response = client.get_secret_value(SecretId='EMPDB')
 database_secrets = json.loads(response['SecretString'])
 password = database_secrets['password']
 
+#connect to the database
 db_conn = mysql.connector.connect(
     host=hostname,
     port=3306,
@@ -44,9 +43,9 @@ def AddEmp():
     first_name = request.form['first_name']
     last_name = request.form['last_name']
     pri_skill = request.form['pri_skill']
-    Company = request.form['Company']
+    Department = request.form['Department']
 
-    add_data = "INSERT INTO Emp ( emp_id ,first_name, last_name, pri_skill, Company) VALUES (%s, %s, %s, %s, %s)"
+    add_data = "INSERT INTO Employee ( emp_id ,first_name, last_name, pri_skill, Department) VALUES (%s, %s, %s, %s, %s)"
 
     data = (emp_id, first_name, last_name, pri_skill, Company)
     cursor = db_conn.cursor()
@@ -68,7 +67,7 @@ def GetEmployee():
 def GetEmp():
     cursor = db_conn.cursor()
     emp_id = request.form['emp_id']
-    query = "SELECT * FROM Emp WHERE emp_id = %s"
+    query = "SELECT * FROM Employee WHERE emp_id = %s"
 
     try:
         cursor.execute(query, (emp_id,))
